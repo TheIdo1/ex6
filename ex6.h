@@ -7,8 +7,7 @@
 #include <string.h>
 
 
-typedef enum
-{
+typedef enum {
     GRASS,
     FIRE,
     WATER,
@@ -26,14 +25,12 @@ typedef enum
     ICE
 } PokemonType;
 
-typedef enum
-{
+typedef enum {
     CANNOT_EVOLVE,
     CAN_EVOLVE
 } EvolutionStatus;
 
-typedef struct PokemonData
-{
+typedef struct PokemonData {
     int id;
     char *name;
     PokemonType TYPE;
@@ -43,20 +40,18 @@ typedef struct PokemonData
 } PokemonData;
 
 // Binary Tree Node (for Pokédex)
-typedef struct PokemonNode
-{
-    PokemonData *data;
+typedef struct PokemonNode {
+    const PokemonData *data;
     struct PokemonNode *left;
     struct PokemonNode *right;
 } PokemonNode;
 
 // Linked List Node (for Owners)
-typedef struct OwnerNode
-{
-    char *ownerName;          // Owner's name
+typedef struct OwnerNode {
+    char *ownerName; // Owner's name
     PokemonNode *pokedexRoot; // Pointer to the root of the owner's Pokédex
-    struct OwnerNode *next;   // Next owner in the linked list
-    struct OwnerNode *prev;   // Previous owner in the linked list
+    struct OwnerNode *next; // Next owner in the linked list
+    struct OwnerNode *prev; // Previous owner in the linked list
 } OwnerNode;
 
 // Global head pointer for the linked list of owners
@@ -146,6 +141,12 @@ void freePokemonTree(PokemonNode *root);
  */
 void freeOwnerNode(OwnerNode *owner);
 
+/**
+ * @brief checks owners list and return num of owners.
+ * @return num of owners.
+ */
+int countOwners(void);
+
 /* ------------------------------------------------------------
    3) BST Insert, Search, Remove
    ------------------------------------------------------------ */
@@ -158,6 +159,14 @@ void freeOwnerNode(OwnerNode *owner);
  * Why we made it: Standard BST insertion ignoring duplicates.
  */
 PokemonNode *insertPokemonNode(PokemonNode *root, PokemonNode *newNode);
+
+/**
+ * @brief same as regular insert, but without printing any massages, good for merging.
+ * @param root pointer to BST root
+ * @param newNode node to insert
+ * @return updated BST root
+ */
+PokemonNode *silentInsertPokemonNode(PokemonNode *root, PokemonNode *newNode);
 
 /**
  * @brief BFS search for a Pokemon by ID in the BST.
@@ -237,21 +246,17 @@ void printPokemonNode(PokemonNode *node);
 /* ------------------------------------------------------------
    5) Display Methods (BFS, Pre, In, Post, Alphabetical)
    ------------------------------------------------------------ */
-
-typedef struct
-{
+typedef struct {
     PokemonNode **nodes;
-    int size;
     int capacity;
 } NodeArray;
 
 /**
  * @brief Initialize a NodeArray with given capacity.
  * @param na pointer to NodeArray
- * @param cap initial capacity
  * Why we made it: We store pointers to PokemonNodes for alphabetical sorting.
  */
-void initNodeArray(NodeArray *na, int cap);
+void initNodeArray(NodeArray *na);
 
 /**
  * @brief Add a PokemonNode pointer to NodeArray, realloc if needed.
@@ -270,13 +275,11 @@ void addNode(NodeArray *na, PokemonNode *node);
 void collectAll(PokemonNode *root, NodeArray *na);
 
 /**
- * @brief Compare function for qsort (alphabetical by node->data->name).
- * @param a pointer to a pointer to PokemonNode
- * @param b pointer to a pointer to PokemonNode
- * @return -1, 0, or +1
- * Why we made it: Sorting by name for alphabetical display.
- */
-int compareByNameNode(const void *a, const void *b);
+*@brief sorts list that is stored inside sent struct
+*@param nodeArray struct that contains size and list
+*why I made it: to sort the list alphabetically.
+*/
+void sortAlphabetical(NodeArray* nodeArray);
 
 /**
  * @brief BFS is nice, but alphabetical means we gather all nodes, sort by name, then print.
@@ -313,6 +316,59 @@ void inOrderTraversal(PokemonNode *root);
  */
 void postOrderTraversal(PokemonNode *root);
 
+/* ------------------------------------------------------------
+       5.5) BFS Sub-Functions
+   ------------------------------------------------------------ */
+
+// Queue for BFS
+typedef struct QueueNode {
+ PokemonNode *data;
+ struct QueueNode *next;
+} QueueNode;
+
+typedef struct Queue {
+ QueueNode *front, *rear;
+} Queue;
+
+/**
+* @brief mallocs memory for queue, has pointer to start and end of queue.
+* @returns pointer to created queue
+*/
+Queue *createQueue(void);
+
+/**
+* @brief mallocs memory for queue node, associates data with node.
+* @param data which pokemon from pokedex add to the node.
+* @returns pointer to created queue
+*/
+QueueNode *createQueueNode(PokemonNode *data);
+
+/**
+* @brief check if given queue is empty.
+* @param myQ pointer to queue to check.
+* @returns 1 if empty, 0 if has items.
+*/
+int isQueueEmpty(Queue *myQ);
+
+/**
+* @brief add item to the last place in queue. friendly to empty queues.
+* @param myQ pointer to the queue.
+* @param node pointer to pokemon node to add to queue.
+*/
+void enQueue(Queue *myQ, PokemonNode *node);
+
+/**
+* @brief removes first item from queue, also friendly to empty queues.
+* @param myQ pointer to the queue.
+* @returns pointer to data of removed item, or NULL if didnt remove anything.
+*/
+PokemonNode *popQueue(Queue *myQ);
+
+/**
+* @brief free all items from queue, then free queue itself.
+* @param myQ pointer to the queue.
+*/
+void destroyQueue(Queue *myQ);
 /* ------------------------------------------------------------
    6) Pokemon-Specific
    ------------------------------------------------------------ */
@@ -610,6 +666,7 @@ static const PokemonData pokedex[] = {
     {148, "Dragonair", DRAGON, 61, 84, CAN_EVOLVE},
     {149, "Dragonite", DRAGON, 91, 134, CANNOT_EVOLVE},
     {150, "Mewtwo", PSYCHIC, 106, 110, CANNOT_EVOLVE},
-    {151, "Mew", PSYCHIC, 100, 100, CANNOT_EVOLVE}};
+    {151, "Mew", PSYCHIC, 100, 100, CANNOT_EVOLVE}
+};
 
 #endif // EX6_H
